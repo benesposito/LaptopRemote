@@ -1,54 +1,54 @@
 import React from 'react';
 import './App.css';
+import hostname from './ip.js';
 import RemoteButton from './RemoteButton';
-
-let IP = '10.0.0.213'
 
 class App extends React.Component {
 	state = {
 		players: [],
-		player: 'vlc',
+		player: undefined,
 		volume: 10
 	}
 	
 	constructor(props) {
 		super(props);
 
-		fetch('http://' + IP + ':5000/api/getplayers').then(res => {
+		fetch(hostname + '/api/getplayers').then(res => {
 			res.json().then(players => {
 				console.log(players);
 				this.setState({
-					players: players
-				})
+					players: players,
+					player: players[0]
+				});
 			});
 		});
 
-		fetch('http://' + IP + ':5000/api/getvolume').then(res => {
+		fetch(hostname + '/api/getvolume').then(res => {
 			res.json().then(volume => {
 				this.setState({
 					volume: volume
-				})
-				console.log('set volume: ' + volume);
+				});
 			})
 		});
 
+		this.handleDropdownChange = this.handleDropdownChange.bind(this);
 		this.handleSliderChange = this.handleSliderChange.bind(this);
 	}
 
 	handleDropdownChange(e) {
-		console.log(e.target);
+		console.log(e.target.value);
 		this.setState({ player: e.target.value });
 	}
 
 	handleSliderChange(e) {
 		this.setState({ volume: e.target.value });
-		console.log(this.state.volume);
+		console.log(e.target.value / 100);
 
 		fetch(
-			'http://' + IP + ':5000/api/setvolume',
+			hostname + '/api/setvolume',
 			{
 				method: 'POST',
-				body: JSON.stringify({ volume: e.target.value })
+				body: JSON.stringify({ volume: (e.target.value / 100).toString(), player: this.state.player })
 			}
 		);
 	}
@@ -56,18 +56,20 @@ class App extends React.Component {
 	render() {
 		let options = [];
 
-		for(let player of this.state.players)
-			options.push(<option value={player}>{player}</option>);
+		for(let i = 0; i < this.state.players.length; i++) {
+			let player = this.state.players[i];
+			options.push(<option key={i} value={player}>{player}</option>);
+		}
 
-		console.log(this.state.volume);
+		console.log('volume: ' + this.state.volume);
 
 		return (
 			<div>
-				{/* <div>
+				<div>
 					<select onChange={this.handleDropdownChange}>
 						{options}
 					</select>
-				</div> */}
+				</div>
 
 				<RemoteButton
 					value="Rewind"

@@ -1,12 +1,11 @@
 import React from 'react';
 import './RemoteButton.css';
-
-let IP = '10.0.0.213'
+import hostname from './ip.js';
 
 class RemoteButton extends React.Component {
 	handleClick() {
 		fetch(
-			'http://' + IP + ':5000/api/' + this.props.route,
+			hostname + '/api/' + this.props.route,
 			{
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json'},
